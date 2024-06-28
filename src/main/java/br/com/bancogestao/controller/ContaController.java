@@ -5,24 +5,23 @@ import br.com.bancogestao.service.ContaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/aluno")
+@RequestMapping("/conta")
 public record ContaController(ContaService contaService) {
 
     @PostMapping
-    public Conta salvar(@RequestBody Conta conta) {
-        return contaService.salvar(conta);
+    public ResponseEntity<Conta> criarConta(@RequestBody Conta conta) {
+        Conta contaSalva = contaService.criarConta(conta);
+        return new ResponseEntity<>(contaSalva, HttpStatus.CREATED);
     }
 
-    @Operation(description = "Busca o conta pelo id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Retorna a conta"),
-            @ApiResponse(responseCode = "400", description = "Não existe a conta com o id informado")
-    })
-    @GetMapping("/{id}")
-    public Conta buscarPorId(@PathVariable Long id) {
-        return contaService.buscarPorId(id);
+    @GetMapping
+    public ResponseEntity<Conta> buscarContaPorNumero(@RequestParam int numeroConta) {
+        Conta conta = contaService.buscarContaPorNumero(numeroConta);
+        return new ResponseEntity<>(conta, HttpStatus.OK);
     }
 }
