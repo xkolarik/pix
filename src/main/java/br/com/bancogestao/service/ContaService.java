@@ -1,21 +1,36 @@
 package br.com.bancogestao.service;
 
 import br.com.bancogestao.entity.Conta;
+import br.com.bancogestao.exception.ContaJaExistenteException;
 import br.com.bancogestao.exception.ContaNaoEncontradaException;
 import br.com.bancogestao.exception.SaldoInsuficienteException;
-import br.com.bancogestao.message.PublicaMensagemAContaCadastrado;
 import br.com.bancogestao.repository.ContaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
-public record ContaService(ContaRepository contaRepository,
-                           PublicaMensagemAContaCadastrado publicaMensagemAContaCadastrado) {
+public class ContaService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContaService.class);
+
+    private final ContaRepository contaRepository;
+
+    public ContaService(ContaRepository contaRepository) {
+        this.contaRepository = contaRepository;
+    }
 
     @Transactional
     public Conta criarConta(Conta conta) {
+        logger.info("Criando conta: {}", conta);
+
+        if (contaRepository.findByNumeroConta(conta.getNumeroConta()).isPresent()) {
+            throw new ContaJaExistenteException("Já existe uma conta com este número de conta");
+        }
         return contaRepository.save(conta);
     }
+
 
     public Conta buscarContaPorNumero(int numeroConta) {
         return contaRepository.findByNumeroConta(numeroConta)
